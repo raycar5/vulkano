@@ -2812,15 +2812,16 @@ impl SyncCommandBufferBuilder {
                     _ne: _,
                 } = region;
 
-                let format = if image_subresource.aspects.contains(ImageAspects::PLANE_0) {
-                    dst_image.format().planes()[0]
-                } else if image_subresource.aspects.contains(ImageAspects::PLANE_1) {
-                    dst_image.format().planes()[1]
-                } else if image_subresource.aspects.contains(ImageAspects::PLANE_2) {
-                    dst_image.format().planes()[2]
-                } else {
-                    dst_image.format()
-                };
+                let image_subresource_format =
+                    if image_subresource.aspects.contains(ImageAspects::PLANE_0) {
+                        dst_image.format().planes()[0]
+                    } else if image_subresource.aspects.contains(ImageAspects::PLANE_1) {
+                        dst_image.format().planes()[1]
+                    } else if image_subresource.aspects.contains(ImageAspects::PLANE_2) {
+                        dst_image.format().planes()[2]
+                    } else {
+                        dst_image.format()
+                    };
 
                 [
                     (
@@ -2832,7 +2833,8 @@ impl SyncCommandBufferBuilder {
                         },
                         Resource::Buffer {
                             buffer: src_buffer.clone(),
-                            range: buffer_offset..buffer_offset + region.buffer_copy_size(format),
+                            range: buffer_offset
+                                ..buffer_offset + region.buffer_copy_size(image_subresource_format),
                             memory: PipelineMemoryAccess {
                                 stages: PipelineStages::ALL_TRANSFER,
                                 access: AccessFlags::TRANSFER_READ,
@@ -2924,6 +2926,16 @@ impl SyncCommandBufferBuilder {
                     _ne: _,
                 } = region;
 
+                let image_subresource_format =
+                    if image_subresource.aspects.contains(ImageAspects::PLANE_0) {
+                        src_image.format().planes()[0]
+                    } else if image_subresource.aspects.contains(ImageAspects::PLANE_1) {
+                        src_image.format().planes()[1]
+                    } else if image_subresource.aspects.contains(ImageAspects::PLANE_2) {
+                        src_image.format().planes()[2]
+                    } else {
+                        src_image.format()
+                    };
                 [
                     (
                         ResourceUseRef {
@@ -2954,7 +2966,7 @@ impl SyncCommandBufferBuilder {
                         Resource::Buffer {
                             buffer: dst_buffer.clone(),
                             range: buffer_offset
-                                ..buffer_offset + region.buffer_copy_size(src_image.format()),
+                                ..buffer_offset + region.buffer_copy_size(image_subresource_format),
                             memory: PipelineMemoryAccess {
                                 stages: PipelineStages::ALL_TRANSFER,
                                 access: AccessFlags::TRANSFER_WRITE,
