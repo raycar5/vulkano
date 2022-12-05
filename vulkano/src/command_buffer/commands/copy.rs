@@ -2812,6 +2812,16 @@ impl SyncCommandBufferBuilder {
                     _ne: _,
                 } = region;
 
+                let format = if image_subresource.aspects.contains(ImageAspects::PLANE_0) {
+                    dst_image.format().planes()[0]
+                } else if image_subresource.aspects.contains(ImageAspects::PLANE_1) {
+                    dst_image.format().planes()[1]
+                } else if image_subresource.aspects.contains(ImageAspects::PLANE_2) {
+                    dst_image.format().planes()[2]
+                } else {
+                    dst_image.format()
+                };
+
                 [
                     (
                         ResourceUseRef {
@@ -2822,8 +2832,7 @@ impl SyncCommandBufferBuilder {
                         },
                         Resource::Buffer {
                             buffer: src_buffer.clone(),
-                            range: buffer_offset
-                                ..buffer_offset + region.buffer_copy_size(dst_image.format()),
+                            range: buffer_offset..buffer_offset + region.buffer_copy_size(format),
                             memory: PipelineMemoryAccess {
                                 stages: PipelineStages::ALL_TRANSFER,
                                 access: AccessFlags::TRANSFER_READ,
